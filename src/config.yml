@@ -1,0 +1,8 @@
+chatColorEnabled: true
+chatColorPrefix: "@@ "
+
+tiles:
+  admin: "&7[&cADMIN&7]&f &N"
+
+players:
+  bindernews: admin

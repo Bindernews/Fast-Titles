@@ -1,0 +1,23 @@
+name: FastTitles
+author: Binder News
+version: 1.1
+main: com.github.bindernews.fasttitles.FastTitles
+depends: []
+prefix: fasttitles
+commands:
+  title:
+    description: Manage titles
+    usage: /<command> <subcommand> <...>
+    permission: ""
+    
+permissions:
+  fasttitles.title.set:
+    description: Set your own title
+    default: op
+  fasttitles.title.list:
+    description: List available titles
+    default: op
+  fasttitles.title.remove:
+    description: Remove a title
+  fasttitles.colorchat:
+    description: Chat in color

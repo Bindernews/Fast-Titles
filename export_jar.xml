@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FastTitles.makejar" default="testjar">
+	<target name="testjar">
+		<jar destfile="FastTitles.jar">
+			<fileset dir="bin" />
+			<fileset dir="." includes="README.md,LICENSE" />
+		</jar>
+	</target>
+</project>
