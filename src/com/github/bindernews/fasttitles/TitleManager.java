@@ -27,6 +27,9 @@ public class TitleManager {
 				setTitle(key, cfgs.getString(key));
 			}
 		}
+		for(Player player : fastTitles.getServer().getOnlinePlayers()) {
+			updatePlayerDisplayName(player);
+		}
 	}
 	
 	public void saveToConfig(Configuration conf) {
@@ -69,7 +72,7 @@ public class TitleManager {
 		} else {
 			String titleFormat = getTitle(title);
 			if (titleFormat != null) {
-				p.setDisplayName(formatString(colorize(title), p.getName()));
+				p.setDisplayName(formatString(colorize(titleFormat), p.getName()));
 				if (save) {
 					fastTitles.getConfig().set(confPath, title);
 				}
@@ -79,8 +82,22 @@ public class TitleManager {
 		}
 	}
 	
+	public void updatePlayerDisplayName(Player p) {
+		String confPath = "players." + p.getName();
+		String title = fastTitles.getConfig().getString(confPath);
+		if (title == null || title.equalsIgnoreCase("none")) {
+			p.setDisplayName(p.getName());
+		} else {
+			String titleFormat = getTitle(title);
+			if (titleFormat != null) {
+				p.setDisplayName(formatString(colorize(titleFormat), p.getName()));
+			} else {
+			}
+		}
+	}
+	
 	public static String formatString(String in, String username) {
-		in = in.replace("&N", username);
+		in = in.replace("%s", username);
 		return in;
 	}
 	

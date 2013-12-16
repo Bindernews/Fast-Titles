@@ -16,6 +16,7 @@ public abstract class BasicSubcommand extends Command implements Subcommand {
 	protected BasicSubcommand(String name, String description, String usageMessage,
 			List<String> aliases) {
 		super(name, description, usageMessage, aliases != null ? aliases : new ArrayList<String>());
+		setPermissionMessage("You don't have permission");
 		init();
 	}
 
@@ -23,6 +24,7 @@ public abstract class BasicSubcommand extends Command implements Subcommand {
 			List<String> aliases, String permission) {
 		super(name, description, usageMessage, aliases != null ? aliases : new ArrayList<String>());
 		setPermission(permission);
+		setPermissionMessage("You don't have permission");
 		init();
 	}
 
@@ -42,7 +44,7 @@ public abstract class BasicSubcommand extends Command implements Subcommand {
 	// alias, String[] args);
 
 	public boolean register(SubcommandMap cmap) {
-		return cmap.register(getLabel(), "", this);
+		return cmap.register("", this);
 	}
 
 	public void showUsage(CommandSender sender, String format) {

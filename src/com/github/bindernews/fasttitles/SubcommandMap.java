@@ -3,17 +3,20 @@ package com.github.bindernews.fasttitles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 
-public class SubcommandMap{
+public class SubcommandMap {
 
+	private Set<Subcommand> cmdSet = new HashSet<Subcommand>(10);
 	private Map<String, Subcommand> cmdMap = new HashMap<String, Subcommand>(10);
 
 	public static final int PAGE_SIZE = 6;
@@ -48,7 +51,7 @@ public class SubcommandMap{
 	public boolean dispatch(CommandSender sender, String[] splitCmd)
 			throws CommandException {
 		if (splitCmd.length == 0) {
-			throw new CommandException("No command specified");
+			return false;
 		}
 		String cmdName = splitCmd[0];
 		if (cmdName.startsWith("/")) {
@@ -78,7 +81,14 @@ public class SubcommandMap{
 	}
 	
 	public boolean register(String fallbackPrefix, Subcommand command) {
-		return register(command.getLabel(), fallbackPrefix, command);
+		boolean usedFallback = false;
+		usedFallback |= register(command.getLabel(), fallbackPrefix, command);
+		for(String alias : command.getAliases()) {
+			if (!alias.equalsIgnoreCase(command.getLabel())) {
+				usedFallback |= register(alias, fallbackPrefix, command);
+			}
+		}
+		return usedFallback;
 	}
 
 	public boolean register(String label, String fallbackPrefix, Subcommand command) {
@@ -92,6 +102,7 @@ public class SubcommandMap{
 			usedFallback = true;
 		}
 		cmdMap.put(cmdName, command);
+		cmdSet.add(command);
 		return usedFallback;
 	}
 
@@ -99,6 +110,10 @@ public class SubcommandMap{
 		for (Subcommand cmd : commands) {
 			register(fallbackPrefix, cmd);
 		}
+	}
+	
+	public Iterable<Subcommand> getCommandIter() {
+		return cmdSet;
 	}
 
 	public List<String> tabComplete(CommandSender sender, String commandLine)

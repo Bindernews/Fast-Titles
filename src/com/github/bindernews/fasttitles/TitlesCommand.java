@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.ChatPaginator;
+import org.bukkit.util.ChatPaginator.ChatPage;
 
 public class TitlesCommand implements TabExecutor {
 
@@ -20,11 +22,12 @@ public class TitlesCommand implements TabExecutor {
 
 	public static final String HELP_FORMAT = ChatColor.GREEN + "/title %s - "
 			+ ChatColor.AQUA + "%s";
-	public static final String USAGE_FORMAT = ChatColor.GREEN + "/title %s - "
-			+ ChatColor.RED + "%s";
+	public static final String USAGE_FORMAT = ChatColor.RED + "/title %s - %s";
 
 	public TitlesCommand(FastTitles fast) {
+		ft = fast;
 		cmdMap = new SubcommandMap();
+		cmdTitleHelp.register(cmdMap);
 		cmdTitleSet.register(cmdMap);
 		cmdTitleList.register(cmdMap);
 		cmdTitleReload.register(cmdMap);
@@ -41,18 +44,64 @@ public class TitlesCommand implements TabExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command,
 			String label, String[] args) {
+		if (args.length == 0) {
+			sender.sendMessage(ChatColor.RED + "Use /title ? for help.");
+			return true;
+		}
 		try {
-			cmdMap.dispatch(sender, args);
+			if (!cmdMap.dispatch(sender, args)) {
+				sender.sendMessage(ChatColor.RED + "Unknown command. Use /title ? for help.");
+			}
 		} catch (CommandException e) {
-			cmdMap.showGeneralHelp(sender, "", 0, HELP_FORMAT);
+			sender.sendMessage(ChatColor.RED + "Error: " + e.getMessage());
 		}
 		return true;
 	}
+	
+	public final BasicSubcommand cmdTitleHelp = new BasicSubcommand("help","Show help", "", Arrays.asList("?"), "fasttitles.title.help") {
+		@Override
+		public boolean execute(CommandSender sender, String alias, String[] args) {
+			int page = 1;
+			boolean generalHelp = true;
+			if (args.length > 0) {
+				try {
+					page = Integer.parseInt(args[0]);
+				} catch (NumberFormatException nfe) {
+					generalHelp = false;
+				}
+			}
+			if (generalHelp) {
+				String formatString = ChatColor.GREEN + "/title %s - " + ChatColor.AQUA + "%s\n";
+				StringBuilder sb = new StringBuilder();
+				for(Subcommand cmd : cmdMap.getCommandIter()) {
+					sb.append(String.format(formatString, cmd.getLabel(), cmd.getDescription()));
+					for(String tcalias : cmd.getAliases()) {
+						if (!tcalias.equals(cmd.getLabel())) {
+							sb.append(String.format(formatString, tcalias, "Alias of " + cmd.getLabel()));
+						}
+					}
+				}
+				ChatPage cp = ChatPaginator.paginate(sb.toString(), page);
+				sender.sendMessage(ChatColor.AQUA + "=== Help page " + cp.getPageNumber() + "/" + cp.getTotalPages() + " ===");
+				sender.sendMessage(cp.getLines());
+			} else {
+				Subcommand cmd = cmdMap.getCommand(args[0]);
+				if (cmd == null) {
+					sender.sendMessage(ChatColor.RED + "Unknown subcommand. Can't provide help.");
+				} else {
+					sender.sendMessage(ChatColor.AQUA + "Usage:");
+					sender.sendMessage(ChatColor.AQUA + "/title " + args[0] + " " + cmd.getUsage());
+				}
+			}
+			return true;
+		}
+	};
 
 	public final BasicSubcommand cmdTitleList = new BasicSubcommand("list",
 			"List all available titles", "", null, "fasttitles.title.list") {
 		@Override
 		public boolean execute(CommandSender sender, String alias, String[] args) {
+			sender.sendMessage(ChatColor.AQUA + "Listing titles...");
 			for (String s : ft.titleman.getTitleIter()) {
 				sender.sendMessage(ChatColor.AQUA + s + " - "
 						+ ft.titleman.getTitle(s));
@@ -103,6 +152,7 @@ public class TitlesCommand implements TabExecutor {
 				return true;
 			}
 			ft.titleman.setTitle(nargs[0], nargs[1]);
+			sender.sendMessage(ChatColor.GREEN + "Title " + nargs[0] + " set to \"" + nargs[1] + "\"");
 			return true;
 		}
 	};

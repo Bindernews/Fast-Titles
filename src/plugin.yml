@@ -11,6 +11,9 @@ commands:
     permission: ""
     
 permissions:
+  fasttitles.title.help:
+    description: View help
+    default: op
   fasttitles.title.set:
     description: Set your own title
     default: op
